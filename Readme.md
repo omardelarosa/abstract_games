@@ -8,4 +8,4 @@ These abstract games are experiments utilizing various javascript SVG libraries 
 
 ![circles](images/circles.png "Circles")
 
-Move your circle with the up/down/left/right arrow keys and touch the other circles to give them color.
+Move your circle with the up/down/left/right arrow keys and touch the other circles to give them color.  Press spacebar to make more circles.
