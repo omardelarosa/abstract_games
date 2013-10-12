@@ -1,11 +1,35 @@
 var app = {
+
+	name: "circle.finder",
+
 	initialize: function(){
 		
-		//could be options
-		app.board.$el = $('#game_board');
+		//set name of game at the top.
+		app.name.$el = $("#game_name").text(app.name);
+
+		//clear old state or start empty new one.
+		app.circles = [];
+		app.collisions.circle_ids = [];
+
+		//options
+		app.movement.rate = 2;
+		app.movement.step = 3;
+
+		app.board.$el = app.board.$el || $('#game_board');
+		app.board.start_size = (function(){
+			var size_input = $('#puzzle_size_input').val();
+
+			if (size_input && size_input !== "") {
+				return parseInt(size_input)
+			} else {
+				return false;
+			}
+		}()) || 100;
+
 		app.board.width = app.board.$el.width();
 		app.board.height = app.board.$el.height();
 		app.player.radius = 20;
+
 		app.player.start_x = aux.get_random_x()-100;
 		app.player.start_y = aux.get_random_y()-100;
 		app.player.start_inner_color = "#f00";
@@ -13,7 +37,7 @@ var app = {
 		app.player.start_stroke_width = 5
 		app.board.score = 0;
 		
-
+		//render based on options
 		app.board.canvas = Raphael("game_board", app.board.width, app.board.height);
 		app.player.avatar = app.board.canvas.circle(app.player.start_x, app.player.start_y, app.player.radius)
 		//set colors
@@ -21,41 +45,69 @@ var app = {
 						 .attr("stroke",app.player.start_stroke_color)
 						 .attr("stroke-width",app.player.start_stroke_width)
 
+		
+
 		$(document).on('keydown',app.keydown_callback);
 
 		//make a bunch of circles
-
-		for(var i = 0; i < 500; i++) {
+		for(var i = 0; i < app.board.start_size; i++) {
 			app.action.shoot();
+			$('#score_display').text("0 / "+(i+1));
 		}
-
 	},
 	board: {
+		size: function(){
+			return app.circles.length;
+		},
+		reset: function(){
+			app.board.$el.empty();
+			app.initialize();
+		},
+		render: function(){
+
+			app.board.canvas = Raphael("game_board", app.board.width, app.board.height);
+			app.player.avatar = app.board.canvas.circle(app.player.start_x, app.player.start_y, app.player.radius)
+			//set colors
+			app.player.avatar.attr("fill",app.player.start_inner_color)
+							 .attr("stroke",app.player.start_stroke_color)
+							 .attr("stroke-width",app.player.start_stroke_width)
+
+			app.name.$el = $("#game_name").text(app.name);
+			app.board.$el = $('#game_board');
+
+			$(document).on('keydown',app.keydown_callback);
+
+			//make a bunch of circles
+
+			for(var i = 0; i < app.board.size(); i++) {
+				app.action.shoot();
+				$('#score_display').text("0 / "+(i+1));
+			}
+
+		},
 		updateScore: function(){
 			app.board.score = app.collisions.getTotal()
-			$('#score_display').text(app.board.score)
+			$('#score_display').text(app.board.score+" / "+app.board.size())
 		},
 		changeColors: function(score){
 			switch (score){
 				case 50:
-					_.map(app.collisions.circles,function(circle){
+					_.map(app.collisions.circle_ids,function(circle){
 						// console.log(circle)
 						circle[2].animate({ fill: "#00f"},1000);
 					});
 					break;
 				case 100:
-					_.map(app.collisions.circles,function(circle){
+					_.map(app.collisions.circle_ids,function(circle){
 						circle[2].animate({fill: "#f00"},1000);
 					});
 			}
 		}
 	},
-	circles: [],
 	collisions: { 
-		circles: [],
 		getTotal: function(){
-			var new_total = _.uniq(app.collisions.circles).length;
-			// need to debug
+			var new_total = app.collisions.circle_ids.length;
+			// need to debug/add eventually
 			// app.board.changeColors(new_total);
 			return new_total
 		}
@@ -73,6 +125,19 @@ var app = {
 
 	},
 	action: {
+		toggleOptions: function(e){
+			e.preventDefault();
+			var $button = $('#more_button'),
+				$options = $('#game_options');
+
+			if ($button.text() === "+") {
+				$button.text("-")
+				$options.show()
+			} else {
+				$button.text("+")
+				$options.hide()
+			}
+		},
 		shoot: function(){
 			
 			var source = app.player.getCurrentPosition();
@@ -99,7 +164,8 @@ var app = {
 				},500,"bounce")
 
 			//adds newly crated circle to circles array.
-			app.circles.push([random_x,random_y,new_circle])
+			app.circles.push([new_circle.id, random_x, random_y, new_circle])
+			app.board.updateScore()
 		},
 		collide: function(player_pos){
 			//the range of the search
@@ -112,28 +178,29 @@ var app = {
 			//check if close to any x's
 			var x_matches = _.select(app.circles,
 				function(circle) {
-				if(is_close(circle[0],player_pos.x)){
+				if(is_close(circle[1],player_pos.x)){
 					return true;
 				}
 			});
 
 			//check if close to any y's in result of previous check
 			var y_matches = _.select(x_matches,function(circle){
-				if(is_close(circle[1],player_pos.y)){
+				if(is_close(circle[2],player_pos.y)){
 					return true
 				}
 			})
 			
 			if(y_matches.length !== 0){
 				_.each(y_matches,function(circle){
-					var circle_x = toString(circle[0]),
-						circle_y = toString(circle[1]),
-						circle_el = circle[2];
+					var circle_x = toString(circle[1]),
+						circle_y = toString(circle[2]),
+						circle_el = circle[3];
 
 					circle_el.animate({fill: "#0f0"},1000);
 
-					app.collisions.circles.push(circle)
-
+					if ( _.indexOf(app.collisions.circle_ids,circle[0]) === -1 ) {
+						app.collisions.circle_ids.push(circle[0])
+					}
 					//need to run this waaaaay less frequently
 					app.board.updateScore();
 				})
@@ -143,8 +210,7 @@ var app = {
 	},
 	movement: {
 		//movement steps/rates
-		rate: 2,
-		step: 3,
+		
 		//Targets are Raphael Elements
 		slide: function(target, direction_name, e){
 			
@@ -184,7 +250,7 @@ var app = {
 					break;
 			}
 
-			target.animate(destination, app.movement.rate, "bounce", function(){
+			target.animate(destination, app.movement.rate, function(){
 				var pos = app.player.getCurrentPosition()
 				app.action.collide(pos);
 			})
@@ -194,16 +260,23 @@ var app = {
 	keydown_callback: function(e){
 
 			var key_num = e.keyCode,
-				key_name = aux.key_to_s(key_num)
-			
-			if(key_name === "space") {
-				e.preventDefault()
-				app.action.shoot();
-			
-			} else {
+				key_name = aux.key_to_s(key_num),
+				key_bindings = ["space","o","up","down","left","right"];
 
-				app.movement.slide(app.player.avatar, key_name, e)
-			
+			var command_index = _.indexOf(key_bindings,key_name);
+
+			switch (command_index) {
+				case -1:
+					break;
+				case 0:
+					e.preventDefault()
+					app.action.shoot();
+					break;
+				case 1:
+					app.action.toggleOptions(e)
+				default:
+					app.movement.slide(app.player.avatar, key_name, e)
+					break;
 			}
 			
 		}
@@ -222,6 +295,8 @@ var aux = {
 				return "right"
 			case 32:
 				return "space"
+			case 79:
+				return "o"
 		}
 	},
 	get_random_x: function(){
@@ -235,5 +310,10 @@ var aux = {
 $(function(){
 
 	app.initialize();
+
+	//bind options behavior
+
+	$('#more_button').on('click',app.action.toggleOptions);
+	$('#reset_button').on('click',app.board.reset)
 
 })
