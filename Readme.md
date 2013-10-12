@@ -1,10 +1,11 @@
-Abstract Games
+[abstract games](http://omardelarosa.github.io/abstract_games/)
 ===============
 
 These abstract games are experiments utilizing various javascript SVG libraries such as Raphael and KineticJS.
 
-Circles.js
+[circle finder](http://omardelarosa.github.io/abstract_games/circle_finder/)
 ----------
-![circles](images/circles.png "Logo Title Text 1")
 
-Move your circle with the up/down/left/right arrow keys and fire with spacebar.
+![circles](images/circles.png "Circles")
+
+Move your circle with the up/down/left/right arrow keys and touch the other circles to give them color.
