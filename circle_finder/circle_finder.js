@@ -294,7 +294,8 @@ var app = {
 
 			var old_pos = app.player.getCurrentPosition(),
 				new_x = e.clientX,
-				new_y = parseInt((e.clientY*0.9));
+				// includes adjustment for navbar height;
+				new_y = parseInt((e.clientY-(app.board.height*0.1)));
 
 			var destination = {
 				cx: new_x,
