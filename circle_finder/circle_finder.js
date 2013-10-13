@@ -52,7 +52,8 @@ var app = {
 		//make a bunch of circles
 		for(var i = 0; i < app.board.start_size; i++) {
 			app.action.shoot();
-			$('#score_display').text("0 / "+(i+1));
+			$('#current_score').text("0");
+			$('#max_score').text("/ "+(i+1));
 		}
 	},
 	board: {
@@ -87,7 +88,8 @@ var app = {
 		},
 		updateScore: function(){
 			app.board.score = app.collisions.getTotal()
-			$('#score_display').text(app.board.score+" / "+app.board.size())
+			$('#current_score').text(app.board.score)
+			$('#max_score').text(" / "+app.board.size())
 		},
 		changeColors: function(score){
 			switch (score){

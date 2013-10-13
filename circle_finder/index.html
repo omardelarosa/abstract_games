@@ -13,26 +13,27 @@
 <body>
 
 <div id="main_container">
-<div id="score_display">
-	0
-</div>
-<div id="more_button">
-	+
-</div>
-<div id="game_options">
-	<h2 id="game_options_heading">options</h2>
-	<div id="game_options_inputs">
-		<input type="text" id="puzzle_size_input" placeholder="# of circles" />
-		<input type="text" id="puzzle_size_input" placeholder="player avatar color" />
-		<span id="reset_button">reset</span>
+<div id="navbar">
+	<div id="score_display">
+		<span id="current_score">0</span>
+		<span id="max_score"></span>
 	</div>
+	<div id="more_button">
+		+
+	</div>
+	<div id="game_options">
+		<h2 id="game_options_heading">options</h2>
+		<div id="game_options_inputs">
+			<input type="text" id="puzzle_size_input" placeholder="# of circles" />
+			<input type="text" id="puzzle_size_input" placeholder="player avatar color" />
+			<span id="reset_button">reset</span>
+		</div>
+	</div>
+	<h1 id="game_name">circle finder</h1>
+	<div class="clear_fix"></div>
 </div>
-<h1 id="game_name">circle finder</h1>
-<div class="clear_fix"></div>
 <div id="game_board">
 </div>
-
-
 </div>
 </body>
 </html>
