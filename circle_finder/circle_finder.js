@@ -3,26 +3,24 @@ var app = {
 	name: "circle.finder",
 
 	key: {
-		bindings: [ 
-						"space",
-						"o",
-						"b",
-						"up",
-						"down",
-						"left",
-						"right",
-						"click"
-					],
-		descriptions: [
-							"shoot circles", 
-							"toggle options/instructions", 
-							"burn with rage",
-							"move your avatar up",
-							"move your avatar down",
-							"move your avatar left",
-							"move your avatar right", 
-							"teleport your avatar to a clicked point"
-						]
+
+		bindings: [ "space",
+					"o",
+					"b",
+					"up",
+					"down",
+					"left",
+					"right",
+					"click" ],
+
+		descriptions: [ "shoot circles", 
+						"toggle options/instructions", 
+						"burn with rage",
+						"move up",
+						"move down",
+						"move left",
+						"move right", 
+						"teleport to the clicked point" ]
 	},
 
 	initialize: function(){
@@ -31,7 +29,7 @@ var app = {
 		app.name.$el = $("#game_name").text(app.name);
 
 		//clear old state or start empty new one.
-		app.circles = [];
+		app.circles.all = [];
 		app.collisions.circle_ids = [];
 
 		//options
@@ -55,10 +53,13 @@ var app = {
 
 		app.player.start_x = aux.get_random_x()-100;
 		app.player.start_y = aux.get_random_y()-100;
-		app.player.start_inner_color = "#f00";
+		app.player.start_inner_color = "#00f";
 		app.player.start_stroke_color = "#000";
 		app.player.start_stroke_width = 5
+		app.board.other_circle_color = "#f00";
 		app.board.score = 0;
+
+		app.board.setBackground();
 		
 		//render based on options
 		app.board.canvas = Raphael("game_board", app.board.width, app.board.height);
@@ -70,9 +71,7 @@ var app = {
 
 		
 		//event bindings
-
 		$(document).on('keydown',app.keydown_callback);
-
 		$(document).on('click',function(e){
 			app.movement.teleport(app.player.avatar,e);
 		});
@@ -87,6 +86,7 @@ var app = {
 		//
 		app.render.instructions();
 
+		
 	},
 	render: {
 		instructions: function(){
@@ -109,17 +109,10 @@ var app = {
 			}
 
 				$instructions.append($heading).append($body);
-		}
-	},
-	board: {
-		size: function(){
-			return app.circles.length;
 		},
-		reset: function(){
-			app.board.$el.empty();
-			app.initialize();
-		},
-		render: function(){
+		board: function(){
+			
+			//not in use
 
 			app.board.canvas = Raphael("game_board", app.board.width, app.board.height);
 			app.player.avatar = app.board.canvas.circle(app.player.start_x, app.player.start_y, app.player.radius)
@@ -140,6 +133,29 @@ var app = {
 				$('#score_display').text("0 / "+(i+1));
 			}
 
+			//set toggleHandler
+			$('#more_button').on('click',app.action.toggleOptions);
+			$('#reset_button').on('click',app.board.reset)
+		}
+	},
+	board: {
+		size: function(){
+			return app.circles.all.length;
+		},
+		reset: function(){
+			app.board.$el.empty();
+			app.initialize();
+		},
+		setBackground: function(hex_string){
+			if (hex_string) {
+				app.board.$el.css({backgroundColor: hex_string });
+			} else {
+				app.board.$el.css({backgroundColor: "#fff" });
+			}
+		},
+		getBackgroundColor: function(){
+			var obj = Raphael.getRGB(app.board.$el.css('background-color'));
+			return obj;
 		},
 		updateScore: function(){
 			app.board.score = app.collisions.getTotal();
@@ -148,16 +164,8 @@ var app = {
 			$('#max_score').text(" / "+max)
 
 			//change bg color to player's color if they win.
-			if(app.board.checkWin()){
-				app.board.$el.css({backgroundColor: app.player.start_inner_color })
-			}
-
-		},
-		checkWin: function(){
-			if ( app.board.score === app.board.size() ) {
-				return true;
-			} else {
-				return false;
+			if(app.player.hasWon()){
+				app.player.win();
 			}
 		},
 		changeColors: function(score){
@@ -183,6 +191,41 @@ var app = {
 			return new_total
 		}
 	},
+	circles: {
+		wiggle: function(target) {
+			
+			var wiggle_range = 50,
+				duration = 300;
+
+			if ( target ) {
+				var new_y = target.attrs.cy-wiggle_range;
+				target.animate({cy: new_y},duration,"bounce",function(){
+				  	target.animate({cy: new_y+wiggle_range},duration,"bounce");
+				});
+			} else {
+
+				_.each(app.circles.all,function(circle){
+					var new_y = circle[2]-wiggle_range;
+					circle[3].animate({cy: new_y},500,"bounce",function(){
+					   	circle[3].animate({cy: new_y+wiggle_range},500,"bounce");
+					});
+				});
+			}
+		},
+		drop: function(target) {
+			var duration = 300;
+
+			if ( target ) {
+			
+				target.animate({cy: app.board.height},2000,"bounce");
+			
+			} else {
+				_.each(app.circles.all,function(circle){
+			   		circle[3].animate({cy: app.board.height},2000,"bounce");
+				});
+			}
+		}
+	},
 	player: {
 		getCurrentPosition: function(){
 			
@@ -192,13 +235,54 @@ var app = {
 			};
 			// console.log(pos)
 			return pos;
-		}
+		},
+		win: function(){
 
+			// app.board.$el.css({backgroundColor: app.player.start_inner_color });
+			
+			app.board.setBackground("#0f0");
+			
+			app.circles.wiggle();
+			
+
+		},
+		lose: function(){
+			app.board.setBackground(app.player.start_inner_color);
+			app.circles.drop();
+		},
+		hasWon: function(){
+			if ( app.board.score === app.board.size() ) {
+				return true;
+			} else {
+				return false;
+			}
+		}
 	},
 	action: {
 		burn: function(e) {
 			e.preventDefault();
-			app.player.avatar.glow(20);
+			var blood = app.player.avatar.glow({
+								width: 20,
+								color: app.player.start_inner_color,
+								fill: app.player.start_inner_color
+							});
+			window.setTimeout(function(){
+				blood.animate({stroke: "#fff",fill: "#fff"},1000,function(){
+					blood.remove();
+				});
+			},500)
+		},
+		bleed: function(target){
+			var blood = target.glow({
+								width: 20,
+								color: "#f00",
+								fill: "#f00"
+							});
+			window.setTimeout(function(){
+				blood.animate({stroke: "#fff",fill: "#fff"},1000,function(){
+					blood.remove();
+				});
+			},500)
 		},
 		toggleOptions: function(e){
 			e.preventDefault();
@@ -227,7 +311,7 @@ var app = {
 				new_circle.attr("stroke-width",stroke_width);
 
 			// var new_circle = new app.Bubble(source)
-			// app.circles.push(new_circle)
+			// app.circles.all.push(new_circle)
 			var random_x = aux.get_random_x();
 			var random_y = aux.get_random_y();
 			
@@ -239,7 +323,7 @@ var app = {
 				},500,"bounce")
 
 			//adds newly crated circle to circles array.
-			app.circles.push([new_circle.id, random_x, random_y, new_circle])
+			app.circles.all.push([new_circle.id, random_x, random_y, new_circle])
 			app.board.updateScore()
 		},
 		collide: function(player_pos){
@@ -251,7 +335,7 @@ var app = {
 			}
 
 			//check if close to any x's
-			var x_matches = _.select(app.circles,
+			var x_matches = _.select(app.circles.all,
 				function(circle) {
 				if(is_close(circle[1],player_pos.x)){
 					return true;
@@ -271,13 +355,20 @@ var app = {
 						circle_y = toString(circle[2]),
 						circle_el = circle[3];
 
-					circle_el.animate({fill: "#0f0"},1000);
+					circle_el.animate({fill: app.board.other_circle_color },1000);
 
 					if ( _.indexOf(app.collisions.circle_ids,circle[0]) === -1 ) {
 						app.collisions.circle_ids.push(circle[0])
+
+						app.board.updateScore();
+
+						if( !app.player.hasWon() ) {
+							
+							// bleed
+							app.action.bleed(circle[3]);
+							app.circles.drop(circle[3]);
+						}
 					}
-					//need to run this waaaaay less frequently
-					app.board.updateScore();
 				})
 			}
 			return true
@@ -305,13 +396,25 @@ var app = {
 			var points_data = aux.getTwoPointsData(old_pos.x,new_x,old_pos.y,new_y)
 
 			// distance / ms
-			var time = parseInt((points_data.distance) / 2)*5;
+			var time = parseInt((points_data.distance) / 2)*4;
+			var fifth_of_time = parseInt(time/5);
 
-			target.hide
+			//disappear
+			target.animate({ fill: app.board.getBackgroundColor(), stroke: app.board.getBackgroundColor() },fifth_of_time,function(){
+				//reappear
+				window.setTimeout(function(){
+					app.player.avatar.animate({ fill: app.player.start_inner_color, stroke: app.player.start_stroke_color},fifth_of_time);
+				},(fifth_of_time*3));
+			});
+
 
 			target.animate(destination, time, function(){
 				var pos = app.player.getCurrentPosition()
 				app.action.collide(pos);
+
+				// app.player.avatar.animate({ fill: app.player.start_inner_color, stroke: app.player.start_stroke_color},200);
+
+
 			})
 		},
 		//Targets are Raphael Elements
@@ -366,37 +469,36 @@ var app = {
 
 			target.animate(destination, app.movement.rate, function(){
 				var pos = app.player.getCurrentPosition()
-				app.action.collide(pos);
+				if ( !app.player.hasWon() ) {
+					app.action.collide(pos);
+				}
 			})
-			
 		}
 	},
 	keydown_callback: function(e){
+		var key_num = e.keyCode,
+			key_name = aux.key_to_s(key_num);
 
-			var key_num = e.keyCode,
-				key_name = aux.key_to_s(key_num);
+		var command_index = _.indexOf(app.key.bindings,key_name);
 
-			var command_index = _.indexOf(app.key.bindings,key_name);
-
-			switch (command_index) {
-				case -1:
-					break;
-				case 0:
-					e.preventDefault()
-					app.action.shoot();
-					break;
-				case 1:
-					app.action.toggleOptions(e)
-					break;
-				case 2:
-					app.action.burn(e)
-					break;
-				default:
-					app.movement.slide(app.player.avatar, key_name, e)
-					break;
-			}
-			
+		switch (command_index) {
+			case -1:
+				break;
+			case 0:
+				e.preventDefault()
+				app.action.shoot();
+				break;
+			case 1:
+				app.action.toggleOptions(e)
+				break;
+			case 2:
+				app.action.burn(e)
+				break;
+			default:
+				app.movement.slide(app.player.avatar, key_name, e)
+				break;
 		}
+	}
 };
 
 var aux = {
@@ -439,8 +541,14 @@ $(function(){
 	app.initialize();
 
 	//bind options behavior
-
+	//set toggleHandler
 	$('#more_button').on('click',app.action.toggleOptions);
-	$('#reset_button').on('click',app.board.reset)
+	$('#reset_button').on('click',app.board.reset);
+	$('#game_options').on('click',function(e){
+		e.stopPropagation();
+	})
+	$('#navbar').on('click',function(e){
+		e.stopPropagation();
+	})
 
 })
