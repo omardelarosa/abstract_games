@@ -25,6 +25,8 @@ var app = {
 
 	initialize: function(){
 		
+
+
 		//set name of game at the top.
 		app.name.$el = $("#game_name").text(app.name);
 
@@ -90,12 +92,15 @@ var app = {
 	},
 	render: {
 		instructions: function(){
+			//empty any current instructions
+			var $instructions = $('#instructions');
+
+			$instructions.empty();
+
 			var bindings = app.key.bindings.length,
 				i = 0,
-				$instructions = $('#instructions'),
 				$heading = $('<h2 id="instructions_heading">instructions</h2>');
 				$body = $('<ul id="instructions_list"></ul>');
-
 
 			while(i < bindings) {
 				var $li = $("<li class='key_info'></li>"),
