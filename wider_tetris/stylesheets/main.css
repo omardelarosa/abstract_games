@@ -1,0 +1,92 @@
+/*
+YUI 3.15.0 (build 834026e)
+Copyright 2014 Yahoo! Inc. All rights reserved.
+Licensed under the BSD License.
+http://yuilibrary.com/license/
+*/
+
+html{color:#000;background:#FFF}body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,textarea,p,blockquote,th,td{margin:0;padding:0}table{border-collapse:collapse;border-spacing:0}fieldset,img{border:0}address,caption,cite,code,dfn,em,strong,th,var{font-style:normal;font-weight:normal}ol,ul{list-style:none}caption,th{text-align:left}h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal}q:before,q:after{content:''}abbr,acronym{border:0;font-variant:normal}sup{vertical-align:text-top}sub{vertical-align:text-bottom}input,textarea,select{font-family:inherit;font-size:inherit;font-weight:inherit;*font-size:100%}legend{color:#000}#yui3-css-stamp.cssreset{display:none}
+body {
+  background-color: black;
+}
+
+.cleared {
+  background-color: green;
+}
+
+.white {
+  background-color: white;
+}
+
+#main-heading {
+  position: absolute;
+  z-index: 1;
+  display: inline-block;
+  /*float: right;*/
+  /*left: 70%;*/
+  width: 100%;
+  height: 20%;
+  color: white;
+  margin: 2% 0 0 0;
+  padding: 0;
+  background-color: none;
+}
+
+#main-heading h1 {
+  float: right;
+  /*display: inline-block;*/
+  font-weight: bold;
+  font-family: 'Helvetica';
+  font-size: 3.4em;
+}
+
+#main-heading h2 {
+  float: right;
+  /*display: inline-block;*/
+  font-weight: normal;
+  font-style: italic;
+  font-family: 'Helvetica';
+  font-size: 2.0em;
+}
+
+#main-container {
+  z-index: 0;
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  /*position: absolute;*/
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#grid {
+  /*border: 1px solid black;*/
+  /*width: 100%;*/
+}
+
+.row {
+  width: 100%;
+  /*height: 3.127%;*/
+  /*min-height: 3.127%;*/
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.cell {
+  display: inline-block;
+  background-color: none;
+  height: 100%;
+  /*width: 2%;*/
+  /*min-width: 2%;*/
+  /* adjusted for border */
+  margin: 0 0 0 0;
+  /*border: 1px solid yellow;*/
+  padding: 0;
+}
+
+.filled {
+  background-color: red;
+}
